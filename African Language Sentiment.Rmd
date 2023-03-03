@@ -1,0 +1,64 @@
+---
+title: "African Language Sentiment"
+author: "Rahim Jutha"
+date: "2023-03-02"
+output: html_document
+---
+
+Is making the plot about regions or counries sentiment appropriate for this data?
+I think the plto should be about the sentiment of each language to hopefully show he possible nuances of the language.
+
+# Load Packages
+```{r}
+library(tidyverse)
+library(ggforce)
+library(ggsci)
+```
+
+# Load Data
+```{r}
+afrisenti <- read_csv("data/afrisenti.csv")
+country_regions <- read_csv("data/country_regions.csv") %>%
+language_countries <- read_csv("data/language_countries.csv")
+language_scripts <- read_csv("data/language_scripts.csv")
+languages <- read_csv("data/languages.csv")
+```
+
+# Data Wrangling
+```{r}
+language_countries %>%
+  filter(
+    !(country == "Mozambique" & region %in% c("Southern Africa", "East Africa"))
+  ) %>%
+  group_by(language_iso_code) %>%
+  mutate(countries = paste0(country, collapse = " ")) %>%
+  select(-country) %>%
+  distinct() %>%
+  filter(
+    !((language_iso_code %in% c("swa", "tso", "pt-MZ")) &
+    (region %in% c("Southern Africa", "East Africa")))
+  ) %>%
+  mutate(region = case_when(
+    region == "Northern Africa" ~ "North Africa",
+    TRUE ~ region
+  ))
+  
+df <-
+  afrisenti %>%
+  group_by(language_iso_code) %>%
+  mutate(total = n()) %>%
+  group_by(language_iso_code, label) %>%
+  summarise(total = n() / total) %>% 
+  distinct() %>%
+  left_join(languages, by = "language_iso_code") %>%
+  left_join(country_info, by = "language_iso_code")
+```
+
+# Bar Plot
+```{r}
+df %>%
+    ggplot(aes(x = total, y = language, fill = label)) +
+  geom_col() +
+  scale_fill_npg() +
+  facet_col(~region, scales = "free_y", space = "free")
+```
