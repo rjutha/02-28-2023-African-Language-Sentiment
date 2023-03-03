@@ -13,20 +13,33 @@ I think the plto should be about the sentiment of each language to hopefully sho
 library(tidyverse)
 library(ggforce)
 library(ggsci)
+library(glue)
+library(ggtext)
+library(forcats)
+library(showtext)
 ```
 
 # Load Data
 ```{r}
 afrisenti <- read_csv("data/afrisenti.csv")
-country_regions <- read_csv("data/country_regions.csv") %>%
+country_regions <- read_csv("data/country_regions.csv")
 language_countries <- read_csv("data/language_countries.csv")
 language_scripts <- read_csv("data/language_scripts.csv")
 languages <- read_csv("data/languages.csv")
 ```
 
+# Load Font
+```{r}
+font_add_google(name = "Roboto Condensed", family = "Roboto Condensed")
+font_add_google(name = "Bebas Neue", family = "Bebas Neue")
+showtext_auto()
+```
+
 # Data Wrangling
 ```{r}
-language_countries %>%
+country_info <-
+  language_countries %>%
+  left_join(country_regions, by = "country") %>%
   filter(
     !(country == "Mozambique" & region %in% c("Southern Africa", "East Africa"))
   ) %>%
@@ -51,14 +64,52 @@ df <-
   summarise(total = n() / total) %>% 
   distinct() %>%
   left_join(languages, by = "language_iso_code") %>%
-  left_join(country_info, by = "language_iso_code")
+  left_join(country_info, by = "language_iso_code") %>%
+  
+  mutate(
+    lang_country = glue(
+      "<span style=font-size:11pt; color:grey20>**{language}**</span><br><span style=color:grey 30>{countries}</span>"),
+    label = factor(label, levels = c("positive", "neutral", "negative"))
+  )
 ```
 
 # Bar Plot
 ```{r}
-df %>%
-    ggplot(aes(x = total, y = language, fill = label)) +
+ggplot(data = df, aes(x = total, y = lang_country, fill = label)) +
   geom_col() +
   scale_fill_npg() +
-  facet_col(~region, scales = "free_y", space = "free")
+  facet_col(~region, scales = "free_y" ,space = "free") +
+  scale_x_continuous(expand = c(0, 0), labels = scales::percent) +
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  theme_minimal(base_family = "Roboto Condensed") +
+  theme(
+    panel.grid.minor = element_blank(),
+    panel.grid.major.y = element_blank(),
+    axis.text.y = element_markdown(),
+    plot.title.position = "plot",
+    plot.caption.position = "plot",
+    strip.text = element_text(face = "bold", hjust = 0, color = "grey10", size = 12),
+    panel.spacing = unit(1, "lines"),
+  ) +
+  
+  labs(
+    title = "Place Holder Text",
+    subtitle = "Place Holder Text",
+    x = NULL,
+    y = NULL,
+    ) -> x
+
+
+ggsave(
+    plot = x, filename = "african_sentiment.svg",
+    width = 9, height = 11, units = "in"
+)
 ```
