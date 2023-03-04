@@ -43,7 +43,7 @@ showtext_opts(dpi = 300)
 
 # Data Wrangling
 
-This code takes two data frames and performs several operations in order to filter and join data. The first data frame, language_countries, is joined with country_regions by the "country" column. The join is filtered to remove Mozambique from the Southern Africa and East Africa regions. The language_iso_code column is then grouped, and a countries column is created to store all countries within each language_iso_code. This data is then joined with the afrisenti data frame, and several columns are filtered. The language_iso_code and label columns are grouped, and the total column is created, which stores the number of labels for each language_iso_code. The languages and country_info data frames are then joined to the data frame. Finally, the lang_country and label columns are converted to factors.
+This code takes two data frames and performs several operations in order to filter and join data. The first data frame, language_countries, is joined with country_regions by the "country" column. The join is filtered to remove Mozambique when from the Southern Africa and East Africa regions. The language_iso_code column is then grouped, and a countries column is created to store all countries within each language_iso_code. This data is then joined with the afrisenti data frame, and several columns are filtered. The language_iso_code and label columns are grouped, and the total column is created, which stores the number of labels for each language_iso_code. The languages and country_info data frames are then joined to the data frame. Finally, the lang_country and label columns are converted to factors.
 
 ```{r}
 country_info <-
