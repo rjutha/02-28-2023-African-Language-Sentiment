@@ -20,6 +20,8 @@ library(glue)
 library(ggtext)
 library(forcats)
 library(showtext)
+library(tidytext)
+library(magrittr)
 ```
 
 # Load Data
@@ -43,7 +45,11 @@ showtext_opts(dpi = 300)
 
 # Data Wrangling
 
-This code takes two data frames and performs several operations in order to filter and join data. The first data frame, language_countries, is joined with country_regions by the "country" column. The join is filtered to remove Mozambique when from the Southern Africa and East Africa regions. The language_iso_code column is then grouped, and a countries column is created to store all countries within each language_iso_code. This data is then joined with the afrisenti data frame, and several columns are filtered. The language_iso_code and label columns are grouped, and the total column is created, which stores the number of labels for each language_iso_code. The languages and country_info data frames are then joined to the data frame. Finally, the lang_country and label columns are converted to factors.
+This code takes two data frames and performs several operations in order to filter and join data. The first data frame, language_countries, is joined with country_regions by the "country" column. The join is filtered to remove Mozambique when from the Southern Africa and East Africa regions. The language_iso_code column is then grouped, and a countries column is created to store all countries within each language_iso_code. 
+
+This data is then joined with the afrisenti data frame, and several columns are filtered. The language_iso_code and label columns are grouped, and the total column is created, which stores the number of labels for each language_iso_code. The languages and country_info data frames are then joined to the data frame. Finally, the lang_country and label columns are converted to factors.
+
+Lastly the factor_levels data frame is made and used to change the factor levels of lang_country to change the order of the plot made afterwards.
 
 ```{r}
 country_info <-
@@ -71,10 +77,10 @@ df <-
   mutate(total = n()) %>%
   group_by(language_iso_code, label) %>%
   summarise(total = n() / total) %>% 
+  ungroup() %>%
   distinct() %>%
   left_join(languages, by = "language_iso_code") %>%
   left_join(country_info, by = "language_iso_code") %>%
-  
   mutate(
     lang_country = glue(
       "<span style=font-size:11pt; color:grey20>**{language}**</span><br><span style=color:grey30>{countries}</span>"),
@@ -85,6 +91,17 @@ df <-
       "Southeastern Africa",
       "West Africa")
     )
+  )
+
+factor_levels <-
+  df %>%
+  filter(label == "positive") %>%
+  arrange(total) %>%
+  pull(lang_country)
+
+df %<>%
+  mutate(
+    lang_country = factor(lang_country, levels = factor_levels)
   )
 ```
 
@@ -140,7 +157,7 @@ plot <-
     y = NULL,
     fill = NULL,
     caption = "Source: <b>AfriSenti: Sentiment Analysis dataset for 14 African languages</b> | Graphic by <b>Rahim Jutha</b>"
-  ) -> x
+  ) -> plot
 
 ggsave(
     plot = plot, filename = "african_language_sentiment.svg",

@@ -210,6 +210,18 @@ library(showtext)</code></pre>
 <pre><code>## Warning: package &#39;sysfonts&#39; was built under R version 3.6.3</code></pre>
 <pre><code>## Loading required package: showtextdb</code></pre>
 <pre><code>## Warning: package &#39;showtextdb&#39; was built under R version 3.6.3</code></pre>
+<pre class="r"><code>library(tidytext)</code></pre>
+<pre><code>## Warning: package &#39;tidytext&#39; was built under R version 3.6.3</code></pre>
+<pre class="r"><code>library(magrittr)</code></pre>
+<pre><code>## Warning: package &#39;magrittr&#39; was built under R version 3.6.3</code></pre>
+<pre><code>## 
+## Attaching package: &#39;magrittr&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:purrr&#39;:
+## 
+##     set_names</code></pre>
+<pre><code>## The following object is masked from &#39;package:tidyr&#39;:
+## 
+##     extract</code></pre>
 </div>
 <div id="load-data" class="section level1">
 <h1>Load Data</h1>
@@ -228,7 +240,9 @@ showtext_opts(dpi = 300)</code></pre>
 </div>
 <div id="data-wrangling" class="section level1">
 <h1>Data Wrangling</h1>
-<p>This code takes two data frames and performs several operations in order to filter and join data. The first data frame, language_countries, is joined with country_regions by the “country” column. The join is filtered to remove Mozambique from the Southern Africa and East Africa regions. The language_iso_code column is then grouped, and a countries column is created to store all countries within each language_iso_code. This data is then joined with the afrisenti data frame, and several columns are filtered. The language_iso_code and label columns are grouped, and the total column is created, which stores the number of labels for each language_iso_code. The languages and country_info data frames are then joined to the data frame. Finally, the lang_country and label columns are converted to factors.</p>
+<p>This code takes two data frames and performs several operations in order to filter and join data. The first data frame, language_countries, is joined with country_regions by the “country” column. The join is filtered to remove Mozambique when from the Southern Africa and East Africa regions. The language_iso_code column is then grouped, and a countries column is created to store all countries within each language_iso_code.</p>
+<p>This data is then joined with the afrisenti data frame, and several columns are filtered. The language_iso_code and label columns are grouped, and the total column is created, which stores the number of labels for each language_iso_code. The languages and country_info data frames are then joined to the data frame. Finally, the lang_country and label columns are converted to factors.</p>
+<p>Lastly the factor_levels data frame is made and used to change the factor levels of lang_country to change the order of the plot made afterwards.</p>
 <pre class="r"><code>country_info &lt;-
   language_countries %&gt;%
   left_join(country_regions, by = &quot;country&quot;) %&gt;%
@@ -254,10 +268,10 @@ df &lt;-
   mutate(total = n()) %&gt;%
   group_by(language_iso_code, label) %&gt;%
   summarise(total = n() / total) %&gt;% 
+  ungroup() %&gt;%
   distinct() %&gt;%
   left_join(languages, by = &quot;language_iso_code&quot;) %&gt;%
   left_join(country_info, by = &quot;language_iso_code&quot;) %&gt;%
-  
   mutate(
     lang_country = glue(
       &quot;&lt;span style=font-size:11pt; color:grey20&gt;**{language}**&lt;/span&gt;&lt;br&gt;&lt;span style=color:grey30&gt;{countries}&lt;/span&gt;&quot;),
@@ -270,6 +284,16 @@ df &lt;-
     )
   )</code></pre>
 <pre><code>## `summarise()` has grouped output by &#39;language_iso_code&#39;, &#39;label&#39;. You can override using the `.groups` argument.</code></pre>
+<pre class="r"><code>factor_levels &lt;-
+  df %&gt;%
+  filter(label == &quot;positive&quot;) %&gt;%
+  arrange(total) %&gt;%
+  pull(lang_country)
+
+df %&lt;&gt;%
+  mutate(
+    lang_country = factor(lang_country, levels = factor_levels)
+  )</code></pre>
 </div>
 <div id="bar-plot" class="section level1">
 <h1>Bar Plot</h1>
@@ -321,7 +345,7 @@ plot &lt;-
     y = NULL,
     fill = NULL,
     caption = &quot;Source: &lt;b&gt;AfriSenti: Sentiment Analysis dataset for 14 African languages&lt;/b&gt; | Graphic by &lt;b&gt;Rahim Jutha&lt;/b&gt;&quot;
-  ) -&gt; x
+  ) -&gt; plot
 
 ggsave(
     plot = plot, filename = &quot;african_language_sentiment.svg&quot;,
