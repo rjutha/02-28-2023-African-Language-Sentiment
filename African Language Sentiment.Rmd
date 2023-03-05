@@ -10,7 +10,7 @@ I think the plot should be about the sentiment of each language to hopefully sho
 
 # Load Packages
 
-This code loads the necessary packages for the analysis. The tidyverse package is used for data manipulation and visualization, ggforce for creating special graphics, ggsci for creating special color palettes, glue for combining strings and data together, ggtext for styling text, forcats for working with categorical variables, and showtext for improved rendering of text in plots.
+This code loads several packages that are useful for data visualization, text analysis, and data manipulation. The tidyverse package provides functions for data manipulation, wrangling, and visualization. ggforce and ggsci provide functions for creating aesthetically pleasing, attractive visualizations. The glue package allows for combining strings, template strings, and other data types in order to generate strings. ggtext allows for formatting of text and labels in visualizations. The forcats package provides tools for working with factors and forcats objects. The showtext package provides support for system fonts and font management. The tidytext package provides tools for text analysis and manipulation. The magrittr package provides pipes and functions for manipulating data.
 
 ```{r}
 library(tidyverse)
